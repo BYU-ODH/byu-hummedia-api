@@ -149,6 +149,7 @@ class Video(Document):
                 "write": list
             },
             "dc:hlr": bool,
+            "dc:callnumber": unicode,
             "dc:expirationdate": int,
             "dc:physicallocation": unicode,
             "dc:lastviewed": IsoDate(),
