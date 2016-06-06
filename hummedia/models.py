@@ -148,6 +148,10 @@ class Video(Document):
                 "read": list,
                 "write": list
             },
+            "dc:hlr": bool,
+            "dc:expirationdate": int,
+            "dc:physicallocation": unicode,
+            "dc:lastviewed": IsoDate(),
             "ma:averageBitRate": int,
             "ma:isCopyrightedBy": {
                 "@id": basestring,
