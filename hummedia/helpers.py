@@ -349,6 +349,9 @@ def build_html_table(videos, fields, headings):
                 val = v['@graph'][f]
                 if type(val) == datetime:
                     val = datetime.strftime(val, '%Y-%m-%d')
+                elif f == 'ma:isMemberOf' and type(val) == list:
+                    # List out all collection titles.
+                    val = ', '.join(item[u'title'] for item in val)
                 values.append('<td>%s</td>' % val)
             else:
                 values.append('<td/>')

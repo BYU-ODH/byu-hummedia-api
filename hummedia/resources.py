@@ -298,20 +298,20 @@ class MediaAsset(Resource):
         body = '<h1>%s Media</h1>' % title
 
         if len(exp_date) > 0:
-            exp_date_fields = ['ma:title', 'dc:creator', 'dc:expirationdate']
-            exp_date_headings = ['Title', 'Owner', 'Expiration Date']
+            exp_date_fields = ['ma:title', 'dc:creator', 'dc:expirationdate', 'ma:isMemberOf']
+            exp_date_headings = ['Title', 'Owner', 'Expiration Date', 'Collections']
             exp_date_table = build_html_table(exp_date, exp_date_fields, exp_date_headings)
             body += '<h2>%s</h2>%s' % ('Past Expiration Date', exp_date_table)
 
         if len(stale) > 0:
-            stale_fields = ['ma:title', 'dc:creator', 'dc:date', 'dc:lastviewed']
-            stale_headings = ['Title', 'Owner', 'Upload Date', 'Last Viewed']
+            stale_fields = ['ma:title', 'dc:creator', 'dc:date', 'dc:lastviewed', 'ma:isMemberOf']
+            stale_headings = ['Title', 'Owner', 'Upload Date', 'Last Viewed', 'Collections']
             stale_table = build_html_table(stale, stale_fields, stale_headings)
             body += '<h2>%s</h2>%s' % ('Not Viewed Recently', stale_table)
 
         if len(never_viewed) > 0:
-            never_viewed_fields = ['ma:title', 'dc:creator', 'dc:date']
-            never_viewed_headings = ['Title', 'Owner', 'Upload Date']
+            never_viewed_fields = ['ma:title', 'dc:creator', 'dc:date', 'ma:isMemberOf']
+            never_viewed_headings = ['Title', 'Owner', 'Upload Date', 'Collections']
             never_viewed_table = build_html_table(never_viewed, never_viewed_fields, never_viewed_headings)
             body += '<h2>%s</h2>%s' % ('Never Viewed', never_viewed_table)
 
