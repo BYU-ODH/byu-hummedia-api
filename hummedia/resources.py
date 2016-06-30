@@ -280,6 +280,12 @@ class MediaAsset(Resource):
 
     def get_expired(self, limit=0):
         '''Find any expired media and show why they are considered expired.'''
+        # Only superusers should be able to review this report.
+        from auth import get_profile
+        atts = get_profile()
+        if not atts['superuser']:
+            return action_401()
+
         current_year = datetime.utcnow().year
         stale_date = datetime.utcnow() - timedelta(days=730)
         stale_str = datetime.strftime(stale_date, '%Y-%m-%d')
