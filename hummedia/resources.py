@@ -1,8 +1,8 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from os.path import splitext
 from models import connection
 from flask import request, Response, jsonify
-from helpers import Resource, mongo_jsonify, parse_npt, plain_resp, resolve_type, uri_pattern, bundle_400, bundle_404, action_401, is_enrolled, getYtThumbs
+from helpers import Resource, mongo_jsonify, parse_npt, plain_resp, resolve_type, uri_pattern, bundle_400, bundle_404, action_401, is_enrolled, getYtThumbs, build_html_table
 from mongokit import cursor
 from bson import ObjectId
 from urlparse import urlparse, parse_qs
@@ -246,6 +246,20 @@ class MediaAsset(Resource):
         if not atts['superuser']:
             self.disallowed_atts.append("dc:creator")
 
+    def update_lastview(self, id, limit=0):
+        '''Update the last view time if the 'view' url parameter is used.'''
+        self.bundle = self.model.find_one({'$or': [{'_id': str(id)}, {'_id': ObjectId(id)}]})
+        if self.bundle:
+            self.bundle = self.auth_filter(self.bundle)
+            if not self.bundle:
+                return action_401()
+            self.bundle[u'@graph'][u'dc:lastviewed'] = datetime.utcnow()
+            self.set_attrs()
+            self.bundle.save()
+            return self.get(id)
+        else:
+            return bundle_400('The ID you submitted is malformed.')
+
     def get(self,id,limit=0):
         if self.request.args.get("q") is not None:
             if limit is 0:
@@ -263,7 +277,54 @@ class MediaAsset(Resource):
             return response
 
         return super(MediaAsset, self).get(id, limit)
-    
+
+    def get_expired(self, limit=0):
+        '''Find any expired media and show why they are considered expired.'''
+        # Only superusers should be able to review this report.
+        from auth import get_profile
+        atts = get_profile()
+        if not atts['superuser']:
+            return action_401()
+
+        current_year = datetime.utcnow().year
+        stale_date = datetime.utcnow() - timedelta(days=730)
+        stale_str = datetime.strftime(stale_date, '%Y-%m-%d')
+
+        not_hlr_query = {'$or': [{'@graph.dc:hlr': {'$exists': False}}, {'@graph.dc:hlr': False}]}
+        exp_date_query = {'$and': [not_hlr_query, {'@graph.dc:expirationdate': {'$lt': current_year}}]}
+        stale_query = {'$and': [not_hlr_query, {'@graph.dc:lastviewed': {'$lt': stale_str}}]}
+        never_viewed_query = {'$and': [not_hlr_query, {'@graph.dc.lastviewed': {'$exists': False}}]}
+
+        exp_date = [v for v in self.model.find(exp_date_query).limit(limit)]
+        stale = [v for v in self.model.find(stale_query).limit(limit)]
+        never_viewed = [v for v in self.model.find(never_viewed_query).limit(limit)]
+
+        title = 'Expired Media'
+
+        body = '<h1>%s Media</h1>' % title
+
+        if len(exp_date) > 0:
+            exp_date_fields = ['ma:title', 'dc:creator', 'dc:expirationdate', 'ma:isMemberOf']
+            exp_date_headings = ['Title', 'Owner', 'Expiration Date', 'Collections']
+            exp_date_table = build_html_table(exp_date, exp_date_fields, exp_date_headings)
+            body += '<h2>%s</h2>%s' % ('Past Expiration Date', exp_date_table)
+
+        if len(stale) > 0:
+            stale_fields = ['ma:title', 'dc:creator', 'dc:date', 'dc:lastviewed', 'ma:isMemberOf']
+            stale_headings = ['Title', 'Owner', 'Upload Date', 'Last Viewed', 'Collections']
+            stale_table = build_html_table(stale, stale_fields, stale_headings)
+            body += '<h2>%s</h2>%s' % ('Not Viewed Recently', stale_table)
+
+        if len(never_viewed) > 0:
+            never_viewed_fields = ['ma:title', 'dc:creator', 'dc:date', 'ma:isMemberOf']
+            never_viewed_headings = ['Title', 'Owner', 'Upload Date', 'Collections']
+            never_viewed_table = build_html_table(never_viewed, never_viewed_fields, never_viewed_headings)
+            body += '<h2>%s</h2>%s' % ('Never Viewed', never_viewed_table)
+
+        html = '<html><head><title>%s</title></head><body>%s</body></html>' % (title, body)
+
+        return Response(html, status=200, mimetype="text/html")
+
     def set_query(self):
         q={}
         v=self.request.args.get("q",False)
@@ -467,7 +528,7 @@ class MediaAsset(Resource):
                 elif self.model.structure['@graph'][k]==type(2):
                     try:
                         self.bundle["@graph"][k]=int(v)
-                    except ValueError:
+                    except (ValueError, TypeError):
                         self.bundle["@graph"][k]=0
                 elif type(self.model.structure['@graph'][k])==type([]):
                     self.bundle["@graph"][k]=[]
@@ -491,8 +552,10 @@ class MediaAsset(Resource):
 			    self.bundle["@graph"][k].append(newdict)
                         else:
                             self.bundle["@graph"][k].append(i)    
-                elif k=="dc:date":
-                    self.bundle["@graph"][k]=datetime.strptime(v, '%Y-%m-%d')
+                elif k=="dc:date" or k == "dc:lastviewed":
+                    # 'lastviwed' will not be set at ingestion and should be ignored.
+                    if v:
+                        self.bundle["@graph"][k]=datetime.strptime(v, '%Y-%m-%d')
                 else: 
                     self.bundle["@graph"][k]=v
             elif k=="url":

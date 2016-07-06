@@ -338,6 +338,26 @@ def crossdomain(origin=None, methods=None, headers=None, credentials=False,
 def mongo_jsonify(obj):
     return Response(json.dumps(obj, cls=mongokitJSON),status=200,mimetype="application/json")
 
+def build_html_table(videos, fields, headings):
+    lines = list()
+    heading_line = '<tr>%s</tr>' % ''.join('<th>%s</th>' % str(h) for h in headings)
+    lines.append(heading_line)
+    for v in videos:
+        values = list()
+        for f in fields:
+            if f in v['@graph']:
+                val = v['@graph'][f]
+                if type(val) == datetime:
+                    val = datetime.strftime(val, '%Y-%m-%d')
+                elif f == 'ma:isMemberOf' and type(val) == list:
+                    # List out all collection titles.
+                    val = ', '.join(item[u'title'] for item in val)
+                values.append('<td>%s</td>' % val)
+            else:
+                values.append('<td/>')
+        lines.append('<tr>%s</tr>' % ''.join(values))
+    return '<table>%s</table>' % '\n'.join(lines)
+
 def bundle_404():
     return Response("The object was not found",status=404,mimetype="text/plain") 
 

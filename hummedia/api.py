@@ -35,6 +35,16 @@ def Collection(collection,id=None):
 	else:
 		return endpoint_404()
 
+@app.route('/video/expired', methods=['GET', 'OPTIONS'])
+@crossdomain(origin=CROSS_DOMAIN_HOSTS,headers=['Origin','x-requested-with','accept'],credentials=True)
+def getExpiredMedia():
+    return MediaAsset(request).get_expired()
+
+@app.route('/video/<id>/view', methods=['PUT', 'OPTIONS'])
+@crossdomain(origin=CROSS_DOMAIN_HOSTS,headers=['Origin','x-requested-with','accept','Content-Type'],credentials=True)
+def lastView(id):
+    return MediaAsset(request).update_lastview(id)
+
 @app.route('/text/<filename>',methods=['DELETE','PUT'])
 def modify_subtitle(filename):
     video = MediaAsset(request)
