@@ -163,8 +163,39 @@ class Clip(Resource):
                 #return bundle_404()
                 return jsonify({'type': 'get', 'id': id})
 
-    def post(self):
-        return jsonify({'type': 'post'})
+    def post(self, id=None):
+        # Verify that a user is logged in.
+        from auth import get_profile
+        userid = get_profile()['userid']
+        if not userid:
+            userid = 'testing!'
+            #return action_401()
+
+        data = self.request.get_json()
+
+        # Require plugins to have a start time.
+        # End time is optional.
+        if 'start' not in data:
+            return bundle_400('plugins must have a start time!')
+
+        #TODO: validate media id
+        if False:
+            return bundle_400('invalid media id!')
+
+        # Populate the new object with all our data.
+        self.bundle = self.model()
+        self.set_attrs()
+        self.bundle['userid'] = userid
+
+        before = str(self.bundle)
+        #return jsonify(self.bundle)
+        self.bundle.save()
+        after = str(self.bundle)
+
+        #TODO: figure out how to set 'clipid' field to be the index ('_id')
+        return jsonify({'before': before, ' after': after})
+        #return self.save_bundle()
+        return jsonify(self.bundle)
 
     def get_list(self):
         return jsonify({'type': 'get_list'})
