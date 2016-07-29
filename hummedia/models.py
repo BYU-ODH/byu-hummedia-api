@@ -42,6 +42,22 @@ class User(Document):
     default_values={"username":"","email":"","preferredLanguage":"en","role":"student","superuser":False,"ta":False}
     
 @connection.register
+class Clip(Document):
+    __collection__ = 'clips'
+    __database__ = MONGODB_DB
+    use_schemaless = True
+    structure = {
+        'clipid': basestring, # unique id of clip
+        'userid': basestring, # ID of user
+        'mediaid': basestring, # ID of video
+        'name': basestring, # name of clip
+        'start': float, # start time (seconds)
+        'end': float # end time (seconds)
+    }
+    # 'end' is optional - clips will continue playing from bookmark if undefined.
+    required_fields = ['clipid', 'userid', 'mediaid', 'name', 'start']
+
+@connection.register
 class AnnotationList(Document):
     __collection__="annotations"
     __database__=MONGODB_DB

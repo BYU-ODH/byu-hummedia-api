@@ -55,6 +55,12 @@ def modify_subtitle(filename):
         replacement = request.files['subtitle']
         return video.update_subtitle(filename, replacement)
 
+@app.route('/clips', methods=['GET', 'POST'])
+@app.route('/clips/<id>', methods=['GET', 'DELETE'])
+def getClips(id=None):
+    clip = Clip(request)
+    return clip.dispatch(id)
+
 @app.route('/')
 def index():
 	return jsonify({"API":"Humvideo","Version":2})

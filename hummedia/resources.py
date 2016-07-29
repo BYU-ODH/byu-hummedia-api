@@ -16,6 +16,7 @@ ags=db.assetgroups
 assets=db.assets
 annotations=db.annotations
 users=db.users
+clips=db.clips
 
 class UserProfile(Resource):
     collection=users
@@ -139,6 +140,39 @@ class UserProfile(Resource):
             except ET.ParseError:
                 raise res.text
       
+
+class Clip(Resource):
+    collection = clips
+    model = clips.Clip
+    #namespace = hummedia:id/clip
+    endpoint = 'clips'
+
+    def get(self, id):
+        if not id:
+            return self.get_list()
+        else:
+            from auth import get_profile
+            profile = get_profile()
+            userid = profile['userid']
+            query = {'clipid': id}
+            bundle = self.get_bundle(query)
+            if bundle:
+                #return self.serialize_bundle(bundle)
+                return jsonify(bundle)
+            else:
+                #return bundle_404()
+                return jsonify({'type': 'get', 'id': id})
+
+    def post(self):
+        return jsonify({'type': 'post'})
+
+    def get_list(self):
+        return jsonify({'type': 'get_list'})
+
+    def delete(self, id):
+        return jsonify({'type': 'delete', 'id': id})
+
+
 class MediaAsset(Resource):
     collection=assets
     model=assets.Video
