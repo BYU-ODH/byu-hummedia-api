@@ -199,7 +199,7 @@ class Clip(Resource):
         userid = get_profile()['userid']
         if not userid:
             userid = 'testing!' #TODO: remove this.
-            #return action_401() #TODO: fix this.
+            #return action_401() #TODO: enable this.
 
         query = {'userid': userid}
         results = self.collection.find(query)
@@ -212,7 +212,7 @@ class Clip(Resource):
         userid = get_profile()['userid']
         if not userid:
             userid = 'testing!' #TODO: remove this.
-            #return action_401() #TODO: fix this.
+            #return action_401() #TODO: enable this.
 
         query = {'_id': id, 'userid': userid}
         result = self.collection.delete_one(query)
