@@ -152,10 +152,11 @@ class Clip(Resource):
             return self.get_list()
         else:
             from auth import get_profile
-            profile = get_profile()
-            userid = profile['userid']
-            query = {'_id': str(id)}
+            userid = get_profile()['userid']
+
+            query = {'_id': str(id), 'userid': userid}
             bundle = self.get_bundle(query)
+
             if bundle:
                 return self.serialize_bundle(bundle)
             else:
@@ -166,8 +167,8 @@ class Clip(Resource):
         from auth import get_profile
         userid = get_profile()['userid']
         if not userid:
-            userid = 'testing!'
-            #return action_401()
+            userid = 'testing!' #TODO: remove this.
+            #return action_401() #TODO: enable this.
 
         data = self.request.get_json()
 
@@ -193,10 +194,30 @@ class Clip(Resource):
         return self.save_bundle()
 
     def get_list(self):
-        return jsonify({'type': 'get_list'})
+        # Verify that a user is logged in.
+        from auth import get_profile
+        userid = get_profile()['userid']
+        if not userid:
+            userid = 'testing!' #TODO: remove this.
+            #return action_401() #TODO: fix this.
+
+        query = {'userid': userid}
+        results = self.collection.find(query)
+
+        return mongo_jsonify(list(results))
 
     def delete(self, id):
-        return jsonify({'type': 'delete', 'id': id})
+        # Verify that a user is logged in.
+        from auth import get_profile
+        userid = get_profile()['userid']
+        if not userid:
+            userid = 'testing!' #TODO: remove this.
+            #return action_401() #TODO: fix this.
+
+        query = {'_id': id, 'userid': userid}
+        result = self.collection.delete_one(query)
+
+        return jsonify({'success': result.deleted_count == 1})
 
 
 class MediaAsset(Resource):
