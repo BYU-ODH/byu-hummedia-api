@@ -190,9 +190,7 @@ class Clip(Resource):
         self.bundle['userid'] = userid
         self.bundle['_id'] = str(ObjectId())
 
-        self.bundle.save()
-
-        return self.get(self.bundle['_id'])
+        return self.save_bundle()
 
     def get_list(self):
         return jsonify({'type': 'get_list'})
