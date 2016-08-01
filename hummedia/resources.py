@@ -153,6 +153,9 @@ class Clip(Resource):
         else:
             from auth import get_profile
             userid = get_profile()['userid']
+            if not userid:
+                userid = 'testing!' #TODO: remove this.
+                #return action_401() #TODO: enable this.
 
             query = {'_id': str(id), 'userid': userid}
             bundle = self.get_bundle(query)
