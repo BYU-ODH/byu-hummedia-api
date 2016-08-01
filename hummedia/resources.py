@@ -171,14 +171,18 @@ class Clip(Resource):
 
         data = self.request.get_json()
 
-        # Require plugins to have a start time.
+        # Require clips to have a start time.
         # End time is optional.
         if 'start' not in data:
-            return bundle_400('plugins must have a start time!')
+            return bundle_400('clips must have a start time!')
 
-        #TODO: validate media id
-        if False:
-            return bundle_400('invalid media id!')
+        # Validate media id.
+        if 'mediaid' in data:
+            query = {'_id': data['mediaid']}
+            if not assets.find_one(query):
+                return bundle_400('invalid media id!')
+        else:
+            return bundle_400('clips must have a valid media id!')
 
         # Populate the new object with all our data.
         self.bundle = self.model()
