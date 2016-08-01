@@ -47,7 +47,7 @@ class Clip(Document):
     __database__ = MONGODB_DB
     use_schemaless = True
     structure = {
-        'clipid': basestring, # unique id of clip
+        #'_id': basestring, # unique id of clip
         'userid': basestring, # ID of user
         'mediaid': basestring, # ID of video
         'name': basestring, # name of clip
@@ -55,7 +55,7 @@ class Clip(Document):
         'end': float # end time (seconds)
     }
     # 'end' is optional - clips will continue playing from bookmark if undefined.
-    required_fields = ['clipid', 'userid', 'mediaid', 'name', 'start']
+    required_fields = ['userid', 'mediaid', 'name', 'start']
 
 @connection.register
 class AnnotationList(Document):

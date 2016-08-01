@@ -154,14 +154,12 @@ class Clip(Resource):
             from auth import get_profile
             profile = get_profile()
             userid = profile['userid']
-            query = {'clipid': id}
+            query = {'_id': str(id)}
             bundle = self.get_bundle(query)
             if bundle:
-                #return self.serialize_bundle(bundle)
-                return jsonify(bundle)
+                return self.serialize_bundle(bundle)
             else:
-                #return bundle_404()
-                return jsonify({'type': 'get', 'id': id})
+                return bundle_404()
 
     def post(self, id=None):
         # Verify that a user is logged in.
@@ -186,16 +184,11 @@ class Clip(Resource):
         self.bundle = self.model()
         self.set_attrs()
         self.bundle['userid'] = userid
+        self.bundle['_id'] = str(ObjectId())
 
-        before = str(self.bundle)
-        #return jsonify(self.bundle)
         self.bundle.save()
-        after = str(self.bundle)
 
-        #TODO: figure out how to set 'clipid' field to be the index ('_id')
-        return jsonify({'before': before, ' after': after})
-        #return self.save_bundle()
-        return jsonify(self.bundle)
+        return self.get(self.bundle['_id'])
 
     def get_list(self):
         return jsonify({'type': 'get_list'})
