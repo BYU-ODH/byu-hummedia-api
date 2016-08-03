@@ -154,8 +154,7 @@ class Clip(Resource):
             from auth import get_profile
             userid = get_profile()['userid']
             if not userid:
-                userid = 'testing!' #TODO: remove this.
-                #return action_401() #TODO: enable this.
+                return action_401()
 
             query = {'_id': str(id), 'userid': userid}
             bundle = self.get_bundle(query)
@@ -170,8 +169,7 @@ class Clip(Resource):
         from auth import get_profile
         userid = get_profile()['userid']
         if not userid:
-            userid = 'testing!' #TODO: remove this.
-            #return action_401() #TODO: enable this.
+            return action_401()
 
         data = self.request.get_json()
 
@@ -201,8 +199,7 @@ class Clip(Resource):
         from auth import get_profile
         userid = get_profile()['userid']
         if not userid:
-            userid = 'testing!' #TODO: remove this.
-            #return action_401() #TODO: enable this.
+            return action_401()
 
         query = {'userid': userid}
         results = self.collection.find(query)
@@ -214,8 +211,7 @@ class Clip(Resource):
         from auth import get_profile
         userid = get_profile()['userid']
         if not userid:
-            userid = 'testing!' #TODO: remove this.
-            #return action_401() #TODO: enable this.
+            return action_401()
 
         query = {'_id': id, 'userid': userid}
         result = self.collection.delete_one(query)
