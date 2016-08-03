@@ -339,8 +339,17 @@ class MediaAsset(Resource):
                 return action_401()
             self.bundle[u'@graph'][u'dc:lastviewed'] = datetime.utcnow()
             self.set_attrs()
-            self.bundle.save()
-            return self.get(id)
+
+            # Sometimes in the development testing database the ma:duration filed is missing.
+            # This causes an error when the lastview field is updated.
+            # This eats the error, which is probably not a best practice but makes the user
+            # experience better.
+            from mongokit.schema_document import RequireFieldError
+            try:
+                self.bundle.save()
+            except RequireFieldError:
+	        return mongo_jsonify({"resp":200})
+	    return mongo_jsonify({"resp":200})
         else:
             return bundle_400('The ID you submitted is malformed.')
 
