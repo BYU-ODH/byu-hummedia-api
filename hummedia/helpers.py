@@ -411,8 +411,8 @@ def getCurrentSem():
                     ["response"]\
                     ["date_list"]\
                     [0]["year_term"]
-    except KeyError:
-        return ''
+    except IndexError:
+        return 5
 
 def getVideoInfo(filename):
     from subprocess import check_output
