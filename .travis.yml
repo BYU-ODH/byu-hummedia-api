@@ -4,15 +4,11 @@ services: mongodb
 python:
   - 2.7
 
-cache:
-  directories:
-    - $HOME/.pip-cache
-
-install: 
-  - pip install -r requirements.txt --no-use-wheel --download-cache $HOME/.pip-cache
+install:
+  - pip install -r requirements.txt --no-use-wheel
   - sudo apt-get update
   - sudo apt-get install ffmpeg
 
 before_script: cp hummedia/config.template.py hummedia/config.py
-  
+
 script: py.test hummedia/test -l
