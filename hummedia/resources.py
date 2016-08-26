@@ -57,13 +57,13 @@ class UserProfile(Resource):
             bundle=self.acl_filter(atts['username'],bundle)
             self.bundle=bundle
         return self.bundle
-    
+
     def set_disallowed_atts(self):
         from auth import get_profile
         atts=get_profile()
         if not atts['superuser']:
             self.disallowed_atts=['role','superuser']
-        
+
     def acl_filter(self,username="unauth",bundle=None):
         if not bundle:
             bundle=self.bundle
@@ -99,7 +99,7 @@ class UserProfile(Resource):
                 return bundle_400(setattrs.get("msg"))
         else:
             return action_401()
-    
+
     def set_query(self):
         q={}
         if self.request:
@@ -139,7 +139,7 @@ class UserProfile(Resource):
                 raise Exception(errMsg.text)
             except ET.ParseError:
                 raise res.text
-      
+
 
 class Clip(Resource):
     collection = clips
@@ -318,7 +318,7 @@ class MediaAsset(Resource):
         chmod(thumb,0775)
 
         return (True,)
-    
+
     def set_disallowed_atts(self):
         self.disallowed_atts=["dc:identifier","pid","dc:type","url","ma:duration"]
         from auth import get_profile
@@ -426,9 +426,9 @@ class MediaAsset(Resource):
         else:
             if any(x in self.request.args for x in ['yearfrom', 'yearto']):
                 q["@graph.ma:date"]={}
-                if "yearfrom" in self.request.args: 
+                if "yearfrom" in self.request.args:
                     q["@graph.ma:date"]["$gte"]=int(self.request.args.get("yearfrom"))
-                if "yearto" in self.request.args and self.request.args.get("yearto").strip()!="": 
+                if "yearto" in self.request.args and self.request.args.get("yearto").strip()!="":
                     q["@graph.ma:date"]["$lte"]=int(self.request.args.get("yearto"))
             elif "ma:date" in self.request.args:
                 q["@graph.ma:date"]=int(self.request.args.get("ma:date"))
@@ -441,7 +441,7 @@ class MediaAsset(Resource):
                 elif k not in ["yearfrom","yearto","ma:date","part","inhibitor","concise"]:
                     q["@graph."+k]=v
         return q
-        
+
     def get_list(self):
         if "concise" in self.request.args:
           self.bundle=self.auth_filter()
@@ -466,7 +466,7 @@ class MediaAsset(Resource):
 			    image["poster"] = None
                     image.pop("ytId",None)
         return mongo_jsonify(alist)
-        
+
     def set_resource(self):
         self.bundle["@graph"]["resource"]=uri_pattern(self.bundle["@graph"]["pid"],config.APIHOST+"/"+self.endpoint)
 
@@ -477,7 +477,7 @@ class MediaAsset(Resource):
         atts=get_profile()
         if not atts['superuser']:
             self.bundle["@graph"]["dc:creator"]=atts['username']
-    
+
     def read_override(self,obj,username,role):
         from auth import get_profile
         atts=get_profile()
@@ -510,9 +510,9 @@ class MediaAsset(Resource):
                 if coll["@graph"].get("dc:creator")==atts['username'] or atts['username'] in coll['@graph']["dc:rights"]["write"]:
                     return True
         return False
-        
+
     def serialize_bundle(self,payload):
-        payload["@graph"]["resource"]=uri_pattern(payload["@graph"]["pid"],config.APIHOST+"/"+self.endpoint)    
+        payload["@graph"]["resource"]=uri_pattern(payload["@graph"]["pid"],config.APIHOST+"/"+self.endpoint)
         payload["@graph"]["type"]=resolve_type(payload["@graph"]["dc:type"])
         payload["@graph"]["url"]=[]
         payload["@graph"]["ma:image"]=[]
@@ -535,7 +535,7 @@ class MediaAsset(Resource):
                     config.AUTH_TOKEN_SECRET,
                     fileName,
                     hexTime,
-                    request.remote_addr if config.AUTH_TOKEN_IP else '' 
+                    request.remote_addr if config.AUTH_TOKEN_IP else ''
                 ])).hexdigest()
                 loc = ''.join([
                     config.AUTH_TOKEN_PREFIX,
@@ -558,7 +558,7 @@ class MediaAsset(Resource):
                 except KeyError:
                     image["thumb"] = None
                     image["poster"] = None
-                
+
                 image.pop("ytId",None)
         for annot in payload["@graph"]["ma:isMemberOf"]:
             coll=ags.find_one({"_id":annot["@id"]})
@@ -640,12 +640,12 @@ class MediaAsset(Resource):
 				newdict[g]=str(h)
 			    self.bundle["@graph"][k].append(newdict)
                         else:
-                            self.bundle["@graph"][k].append(i)    
+                            self.bundle["@graph"][k].append(i)
                 elif k=="dc:date" or k == "dc:lastviewed":
                     # 'lastviwed' will not be set at ingestion and should be ignored.
                     if v:
                         self.bundle["@graph"][k]=datetime.strptime(v, '%Y-%m-%d')
-                else: 
+                else:
                     self.bundle["@graph"][k]=v
             elif k=="url":
                 if type(v)!=type([]):
@@ -696,8 +696,8 @@ class MediaAsset(Resource):
         filename = secure_filename(subs.filename.split('.', 1)[0]) \
                    + str(uuid.uuid4()) + '.vtt'
 
-        output = os.path.join(config.SUBTITLE_DIRECTORY, filename) 
-       
+        output = os.path.join(config.SUBTITLE_DIRECTORY, filename)
+
         if ext == 'srt':
             vtt.from_srt(subs, output)
         elif ext == 'vtt':
@@ -738,7 +738,7 @@ class MediaAsset(Resource):
                 return result
         else:
             return action_401()
-    
+
     def update_subtitle(self, filename, new_file):
         from helpers import endpoint_404
 
@@ -749,15 +749,15 @@ class MediaAsset(Resource):
         bundle = self.model.find_one(query)
 
         if bundle is None:
-            return endpoint_404() 
-        
+            return endpoint_404()
+
         if not self.acl_write_check(bundle):
           return action_401()
-        
+
         new_file.save(config.SUBTITLE_DIRECTORY + filename)
-        
+
         return mongo_jsonify(bundle)
-    
+
     def delete_subtitle(self, filename):
         from os import remove
         from helpers import endpoint_404
@@ -769,15 +769,15 @@ class MediaAsset(Resource):
         bundle = self.model.find_one(query)
 
         if bundle is None:
-            return endpoint_404() 
-        
+            return endpoint_404()
+
         if not self.acl_write_check(bundle):
             return action_401()
 
         l = bundle.get("@graph").get("ma:hasRelatedResource")
         l[:] = [d for d in l if d.get('@id') != filename]
         bundle.save()
-        
+
         remove(config.SUBTITLE_DIRECTORY + filename)
 
         return mongo_jsonify(bundle)
@@ -794,12 +794,12 @@ def audioCreationBatch():
       return action_401()
 
     files = request.files.getlist('audio[]')
-    
+
     if not len(files):
       return bundle_400("Missing form field 'audio[]'")
 
     incompatible = filter(lambda x: not x.filename.endswith('mp3'), files)
-    
+
     if len(incompatible):
       return bundle_400("Only MP3 files are supported.")
 
@@ -880,7 +880,7 @@ class AssetGroup(Resource):
     namespace="hummedia:id/collection"
     endpoint="collection"
     override_only_triggers=['enrollment']
-    
+
     def set_query(self):
         if "dc:creator" in self.request.args:
             return {"@graph.dc:creator":self.request.args.get("dc:creator")}
@@ -891,7 +891,7 @@ class AssetGroup(Resource):
                 {"@graph.dc:rights.read": {"$in": [read]}},
             ]}
         return {}
-        
+
     def get_list(self):
         alist=[]
         self.bundle=self.auth_filter()
@@ -901,18 +901,18 @@ class AssetGroup(Resource):
                 d["@graph"]["type"]=resolve_type(d["@graph"]["dc:type"])
                 alist.append(d["@graph"])
         return mongo_jsonify(alist)
-        
+
     def set_resource(self):
         self.bundle["@graph"]["resource"]=uri_pattern(self.bundle["@graph"]["pid"],config.APIHOST+"/"+self.endpoint)
-        
+
     def read_override(self,obj,username,role):
         if resolve_type(obj["@graph"]["dc:type"]) in ["course_collection","themed_collection"]:
-            return role=="student" and is_enrolled(obj) 
+            return role=="student" and is_enrolled(obj)
         elif resolve_type(self.bundle["@graph"]["dc:type"]) in ["course_collection","themed_collection"]:
             return role=="student" and (is_enrolled(self.bundle) or username in self.bundle["@graph"]["dc:rights"]["read"])
 	else:
             return False
-            
+
     def preprocess_bundle(self):
         self.bundle["@graph"]["dc:identifier"] = "%s/%s" % (self.namespace,str(self.bundle["_id"]))
         self.bundle["@graph"]["pid"] = str(self.bundle["_id"])
@@ -935,8 +935,8 @@ class AssetGroup(Resource):
             return annotations.find_one(q)
 
         return None
-        
-        
+
+
     def serialize_bundle(self,payload):
         if payload:
             v=assets.find({"@graph.ma:isMemberOf.@id":payload["_id"]})
@@ -946,11 +946,11 @@ class AssetGroup(Resource):
             thumbRetriever=[]
             for vid in v:
                 if self.request.args.get("full",False):
-                    resource=uri_pattern(vid["@graph"]["pid"],config.APIHOST+"/video")    
+                    resource=uri_pattern(vid["@graph"]["pid"],config.APIHOST+"/video")
                     vid["@graph"]["type"]=resolve_type(vid["@graph"]["dc:type"])
                     vid["@graph"]["resource"]=resource
                     vid["@graph"]["ma:image"]=[]
-                    
+
                     annot=self.find_by_relations(vid['@graph']['pid'], payload['_id'])
                     try:
                         vid['@graph']['transcript']=bool(annot['@graph']['vcp:playSettings']['vcp:showTranscript'])
@@ -959,7 +959,7 @@ class AssetGroup(Resource):
 
                     if vid["@graph"]["type"]=="humvideo":
                         needs_ext=True
-                    elif payload['@graph']['type']=='humaudio':
+                    elif 'type' in payload['@graph'] && payload['@graph']['type']=='humaudio':
                         needs_ext=True
                     elif vid["@graph"]["type"]=="yt":
                         needs_ext=False
@@ -992,14 +992,14 @@ class AssetGroup(Resource):
             return mongo_jsonify(payload["@graph"])
         else:
             return mongo_jsonify({})
-            
+
     def set_disallowed_atts(self):
         self.disallowed_atts=["dc:identifier","pid","dc:type"]
         from auth import get_profile
         atts=get_profile()
         if not atts['superuser']:
             self.disallowed_atts.append("dc:creator")
-    
+
     def set_attrs(self):
         if "type" in self.request.json:
             self.bundle["@graph"]["dc:type"]="hummedia:type/"+self.request.json["type"]
@@ -1010,7 +1010,7 @@ class AssetGroup(Resource):
                 elif type(self.model.structure['@graph'][k])==type([]):
                     self.bundle["@graph"][k]=[]
                     for i in v:
-                        self.bundle["@graph"][k].append(i)  
+                        self.bundle["@graph"][k].append(i)
                 else:
                     self.bundle["@graph"][k]=v
 	return ({"resp":200})
@@ -1054,7 +1054,7 @@ class Annotation(Resource):
                     annots.append(str(coll['restrictor']))
             q={"_id":{'$in':annots}}
         return q
-    
+
     def set_query(self):
         if self.request.args.get("dc:relation",False):
             if self.request.args.get("collection"):
@@ -1086,10 +1086,10 @@ class Annotation(Resource):
                 d["@graph"]["resource"]=uri_pattern(d["@graph"]["pid"],config.APIHOST+"/"+self.endpoint)
                 alist.append(d["@graph"])
         return mongo_jsonify(alist)
-        
+
     def set_resource(self):
         self.bundle["@graph"]["resource"]=uri_pattern(self.bundle["@graph"]["pid"],config.APIHOST+"/"+self.endpoint)
-        
+
     def client_process(self,bundle=None,list=False,client=None):
         if not bundle:
             bundle=self.bundle
@@ -1126,7 +1126,7 @@ class Annotation(Resource):
         atts=get_profile()
         if not atts['superuser']:
             self.bundle["@graph"]["dc:creator"]=atts['username']
-        
+
     def serialize_bundle(self,payload):
         return mongo_jsonify(payload["@graph"])
 
@@ -1170,7 +1170,7 @@ class Annotation(Resource):
           else:
             vid_id = json.loads(request.data)['media'][0]['id']
             return can_write_to_vid(assets.find_one(vid_id), name)
-            
+
         pid = bundle['@graph']['pid']
 
         vid=assets.find_one(bundle["@graph"]["dc:relation"])
@@ -1180,13 +1180,13 @@ class Annotation(Resource):
             return True
 
         return can_write_to_vid(vid, name)
-        
+
     def set_disallowed_atts(self):
         from auth import get_profile
         atts=get_profile()
         if not atts['superuser']:
             self.disallowed_atts.append("dc:creator")
-    
+
     def set_attrs(self):
         import traceback
         from flask import send_file
