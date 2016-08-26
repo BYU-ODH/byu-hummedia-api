@@ -959,7 +959,7 @@ class AssetGroup(Resource):
 
                     if vid["@graph"]["type"]=="humvideo":
                         needs_ext=True
-                    elif 'type' in payload['@graph'] && payload['@graph']['type']=='humaudio':
+                    elif 'type' in payload['@graph'] and payload['@graph']['type']=='humaudio':
                         needs_ext=True
                     elif vid["@graph"]["type"]=="yt":
                         needs_ext=False
