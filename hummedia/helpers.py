@@ -10,7 +10,6 @@ from urllib2 import Request, urlopen, URLError
 import json, byu_ws_sdk, requests, re, os, mimetypes
 import time
 
-
 class NoModelException(Exception):
     pass
 
@@ -405,14 +404,14 @@ def getCurrentSem():
     now = datetime.now()
     date = str(now.year) + str(now.month).zfill(2) + str(now.day).zfill(2)
     url = "https://ws.byu.edu/rest/v1/academic/controls/controldatesws/asofdate/{0}/semester.json".format(date)
-
     try:
-        return json.loads(requests.get(url).content)["ControldateswsService"]\
+        sem = json.loads(requests.get(url).content)["ControldateswsService"]\
                     ["response"]\
                     ["date_list"]\
-                    [0]["year_term"]
+                    [0]["year_term"][-1]
     except IndexError:
-        return 5
+        sem = 5
+    return int(sem)
 
 def getVideoInfo(filename):
     from subprocess import check_output
