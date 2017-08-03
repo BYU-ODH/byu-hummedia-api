@@ -562,6 +562,9 @@ class MediaAsset(Resource):
                 image.pop("ytId",None)
         for annot in payload["@graph"]["ma:isMemberOf"]:
             coll=ags.find_one({"_id":annot["@id"]})
+            if coll is None:
+              payload["@graph"]["ma:isMemberOf"].remove(annot)
+              continue
             annot["title"]=coll["@graph"]["dc:title"]
             try:
                 details=annotations.find_one({"_id":annot["restrictor"]})
