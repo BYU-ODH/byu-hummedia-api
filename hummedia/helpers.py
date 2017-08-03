@@ -10,9 +10,6 @@ from urllib2 import Request, urlopen, URLError
 import json, byu_ws_sdk, requests, re, os, mimetypes
 import time
 
-import logging
-logging.basicConfig(filename='/var/www/api/flask/hummedia/debug.log', level=logging.WARNING)
-
 class NoModelException(Exception):
     pass
 
