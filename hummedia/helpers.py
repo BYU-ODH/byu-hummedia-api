@@ -5,7 +5,7 @@ from functools import update_wrapper
 from mongokit import cursor
 from bson import ObjectId
 from models import connection
-from config import APIHOST, YT_SERVICE, BYU_WS_ID, BYU_SHARED_SECRET
+from config import APIHOST, YT_SERVICE, BYU_WS_ID, BYU_SHARED_SECRET, CONSUMER_KEY, CONSUMER_SECRET
 from urllib2 import Request, urlopen, URLError
 import json, byu_ws_sdk, requests, re, os, mimetypes
 import time
@@ -265,16 +265,23 @@ def get_enrollments():
         return["ENGL 999 001 20135","SPAN 999 001 20135"]
     if "enrollments" in session:
         return session.get('enrollments')
-    url="https://ws.byu.edu/rest/v1.0/academic/registration/studentschedule/"+get_userid()+"/"+getCurrentSem()
-    headerVal = byu_ws_sdk.get_http_authorization_header(BYU_WS_ID, BYU_SHARED_SECRET, byu_ws_sdk.KEY_TYPE_API,byu_ws_sdk.ENCODING_NONCE,actor=get_user(),url=url,httpMethod=byu_ws_sdk.HTTP_METHOD_GET,actorInHash=True)
-    res=requests.get(url, headers={'Authorization': headerVal})
+        
+    tokenRes = requests.post('https://api.byu.edu/token', data=[('grant_type', 'client_credentials')], auth=(CONSUMER_KEY, CONSUMER_SECRET))
+    token = json.loads(tokenRes.content)['access_token']
+    
+    headers = {
+        'Accept': 'application/json',
+        'Authorization': 'Bearer '+token,
+    }
+    res = requests.get('https://api.byu.edu:443/domains/legacy/academic/registration/enrollment/v1/studentschedule/personid/'+get_userid()+'/'+getCurrentSem(), headers=headers)
+    
     courses=[]
     try:
-	content=json.loads(res.content)['WeeklySchedService']['response']
+	content=json.loads(res.content)['EnrollmentService']['response']
     except ValueError:
-        content={"schedule_table":[]}
-    for course in content["schedule_table"]:
-        courses.append(" ".join((course['course'],course['section'],content['year_term'])))
+        content={"class_list":[]}
+    for course in content["class_list"]:
+        courses.append(" ".join((course['subject_area'],course['section_number'],course['year_term'])))
     session['enrollments']=courses
     return courses
 
@@ -408,10 +415,10 @@ def getCurrentSem():
         sem = json.loads(requests.get(url).content)["ControldateswsService"]\
                     ["response"]\
                     ["date_list"]\
-                    [0]["year_term"][-1]
+                    [0]["year_term"]
     except IndexError:
         sem = 5
-    return int(sem)
+    return sem
 
 def getVideoInfo(filename):
     from subprocess import check_output
