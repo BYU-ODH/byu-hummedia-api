@@ -281,7 +281,7 @@ def get_enrollments():
     except ValueError:
         content={"class_list":[]}
     for course in content["class_list"]:
-        courses.append(" ".join((course['subject_area'],course['catalog_area'],course['section_number'],course['year_term'])))
+        courses.append(" ".join((course['subject_area'],course['catalog_number'],course['section_number'],course['year_term'])))
     session['enrollments']=courses
     return courses
 
