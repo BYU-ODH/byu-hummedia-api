@@ -1,5 +1,6 @@
 langs=[
 	["af","Afrikaans"],
+        ["sq","Albanian"],
 	["ar","Arabic"],
 	["hy","Armenian"],
 	["bg","Bulgarian"],
