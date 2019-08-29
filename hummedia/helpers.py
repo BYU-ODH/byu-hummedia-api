@@ -409,7 +409,10 @@ def getYtThumbs(ids=[]):
 
 def getCurrentSem():
     now = datetime.now()
-    date = str(now.year) + str(now.month).zfill(2) + str(now.day).zfill(2)
+    year = str(now.year) 
+    month = str(now.month).zfill(2)
+    day = str(now.day).zfill(2)
+    date = year + month + day
     url = "https://ws.byu.edu/rest/v1/academic/controls/controldatesws/asofdate/{0}/semester.json".format(date)
     try:
         sem = json.loads(requests.get(url).content)["ControldateswsService"]\
@@ -417,7 +420,16 @@ def getCurrentSem():
                     ["date_list"]\
                     [0]["year_term"]
     except IndexError:
-        sem = 5
+        try:
+            next_month = str(now.month + 1).zfill(2)
+            date = year + next_month + day
+            url = "https://ws.byu.edu/rest/v1/academic/controls/controldatesws/asofdate/{0}/semester.json".format(date)
+            sem = json.loads(requests.get(url).content)["ControldateswsService"]\
+                        ["response"]\
+                        ["date_list"]\
+                        [0]["year_term"]
+        except IndexError:
+            sem = 5
     return sem
 
 def getVideoInfo(filename):
