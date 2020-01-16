@@ -441,16 +441,16 @@ def getVideoInfo(filename):
         cmd += ['-of','old']
 
     output  =  check_output(cmd)
-    
-    # ensure that the data we have is that for the video. doesn't include audio data
-    stream_match = re.search(
-        r'\[STREAM\]\s*(.*?codec_type=video.*?)\s*\[/STREAM\]',
-        output,
-        re.DOTALL)
+
+    streams = [s for s in re.findall(r'\[STREAM\](.*?)\[/STREAM\]', output, re.DOTALL)
+               if 'codec_type=video' in s]
+    assert len(streams) == 1
+    stream_lines = streams[0].strip().splitlines()
 
     format_match = re.search(r'\[FORMAT\]\s*(.*)\[/FORMAT\]', output, re.DOTALL)
-    
-    lines = stream_match.group(1).splitlines() + format_match.group(1).splitlines()
+    format_lines = format_match.group(1).splitlines()
+
+    lines = stream_lines + format_lines
     data = {line.split('=')[0].strip(): line.split('=')[1].strip() for line in lines}
     
     framerate = data['avg_frame_rate'].split('/')
