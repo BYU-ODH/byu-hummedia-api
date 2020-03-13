@@ -89,8 +89,8 @@ def get_user_from_cas(netid=None,atts=None):
         user=connection.User()
 
     user["username"]=netid.lower()
-    user["firstname"]=unicode(atts["preferredFirstName"])
-    user["lastname"]=unicode(atts["preferredSurname"])
+    user["firstname"]=unicode(atts.get("preferredFirstName", ""))
+    user["lastname"]=unicode(atts.get("preferredSurname", ""))
     user["email"]=atts["emailAddress"]
     user["fullname"]="%s %s" % (user["firstname"],user["lastname"])
     user["userid"]=str(atts["personId"])
