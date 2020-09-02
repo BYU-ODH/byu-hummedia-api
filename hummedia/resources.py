@@ -516,7 +516,7 @@ class MediaAsset(Resource):
         # Log user views
         from auth import get_profile
         atts=get_profile()
-        app.logger.info("\t".join(['VIEW', payload["@graph"]["ma:title"], payload["@graph"]["pid"], datetime.now().isoformat(), atts['username']]))
+        app.logger.info("\t".join(['VIEW', payload["@graph"]["ma:title"], payload["@graph"]["pid"], atts['username']]))
 
         payload["@graph"]["resource"]=uri_pattern(payload["@graph"]["pid"],config.APIHOST+"/"+self.endpoint)
         payload["@graph"]["type"]=resolve_type(payload["@graph"]["dc:type"])
