@@ -512,6 +512,12 @@ class MediaAsset(Resource):
         return False
 
     def serialize_bundle(self,payload):
+
+        # Log user views
+        from auth import get_profile
+        atts=get_profile()
+        app.logger.warn("\t".join(['VIEW', datetime.now().isoformat(), atts['username'], payload["@graph"]["pid"]]))
+
         payload["@graph"]["resource"]=uri_pattern(payload["@graph"]["pid"],config.APIHOST+"/"+self.endpoint)
         payload["@graph"]["type"]=resolve_type(payload["@graph"]["dc:type"])
         payload["@graph"]["url"]=[]
@@ -966,6 +972,8 @@ class AssetGroup(Resource):
                         needs_ext=True
                     elif vid["@graph"]["type"]=="yt":
                         needs_ext=False
+                    else:  # TODO Added this to avoid NameError 2 lines down. Is this right?
+                        needs_ext = False
                     for location in vid["@graph"]["ma:locator"]:
                         if needs_ext:
                             poster=uri_pattern(location["@id"]+".jpg",config.HOST+"/posters")
